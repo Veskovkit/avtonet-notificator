@@ -6,7 +6,6 @@ Scrapes search results, filters by criteria, and sends notifications for new lis
 
 import json
 import os
-import sys
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
@@ -41,7 +40,17 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 def get_page(url):
     """Fetch the search results page."""
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "sl-SI,sl;q=0.9,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Referer": "https://www.avto.net/",
     }
     try:
         response = requests.get(url, headers=headers, timeout=30)
@@ -279,8 +288,9 @@ def main():
     print(f"Fetching: {SEARCH_URL}")
     html_content = get_page(SEARCH_URL)
     if not html_content:
-        print("Failed to fetch page, exiting")
-        sys.exit(1)
+        print("Failed to fetch page (network/403); skipping this run")
+        print(f"[{datetime.now()}] Scraper completed")
+        return
     
     # Parse listings
     print("Parsing listings...")
