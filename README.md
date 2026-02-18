@@ -64,9 +64,29 @@ FILTER_YEAR_MAX = 2023    # Maximum year (0 = no maximum)
 6. Updates `seen_ads.json` with new listing IDs
 7. GitHub Actions commits the updated file back to the repository
 
+## RSS monitor (no HTML scraping)
+
+For a feed-based approach, use `rss_monitor.py`:
+
+1. **Set the RSS URL** at the top of `rss_monitor.py`: build your search on avto.net, then use the RSS link from the results page (or try `https://www.avto.net/Ads/results_rss.asp?` + the same query params as the search).
+2. **Add/remove filters** by editing the query string in `RSS_FEED_URL` (e.g. `znamka=Hyundai`, `cenaMax=7000`, `letnikMin=2010`).
+3. **Run**: `python rss_monitor.py` (set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` for Telegram; otherwise it prints new listings to the console).
+4. **GitHub Actions**: workflow `check_avto_rss.yml` runs every 30 minutes and commits `seen_rss.json` if changed.
+
 ## Files
 
-- `scraper.py` - Main scraper script
-- `seen_ads.json` - Tracks which listings have been seen
-- `.github/workflows/check_avto.yml` - GitHub Actions workflow
+- `scraper.py` - HTML scraper (may hit 403)
+- `rss_monitor.py` - RSS feed monitor (feedparser; no scraping)
+- `seen_ads.json` - State for HTML scraper
+- `seen_rss.json` - State for RSS monitor
+- `.github/workflows/check_avto.yml` - Workflow for HTML scraper
+- `.github/workflows/check_avto_rss.yml` - Workflow for RSS monitor
 - `requirements.txt` - Python dependencies
+
+## Troubleshooting
+
+**403 Forbidden when fetching the page**  
+avto.net sometimes blocks scripted requests (or requests from data-center IPs like GitHub Actions). The scraper will log the error and exit successfully so the workflow does not fail. If you see 403:
+
+- Run the scraper **locally** (e.g. `python scraper.py` on a schedule via Task Scheduler or cron) from your home connection; it may work from a residential IP.
+- Commit and push `seen_ads.json` from that machine if you use Git, or run the workflow only for notifications and keep state elsewhere.
