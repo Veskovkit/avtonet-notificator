@@ -1,3 +1,4 @@
+# Doesn't work!!
 # Avto.net Notifier
 
 Python scraper that monitors avto.net for new car listings matching your criteria and sends Telegram notifications.
